@@ -15,7 +15,8 @@ ESP8266 (NodeMCU v2) driving a 144 px WS2815 or WS2812 strip.
 
 ## Control Page
 
-[!App Screenshot](images/Screenshot_20261121-073045.Chrome.png)
+<img src="images/Screenshot_20261121-073045.Chrome.png" alt="App Screenshot" width="600">
+
 
 ## Power
 
