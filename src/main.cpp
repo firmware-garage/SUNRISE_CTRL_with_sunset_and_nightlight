@@ -801,8 +801,7 @@ void handleSettings() {
   ArduinoOTA.setHostname(cfg.mdnsHostname);
 
   // Force mDNS to re-register with the new hostname
-  MDNS.removeService("http", "tcp");
-  MDNS.addService("http", "tcp", 80);
+  MDNS.begin(cfg.mdnsHostname);
 
   // New start time: allow it to fire today even if today's already ran (handy for testing).
   if (cfg.startHour != oldH || cfg.startMin != oldM) lastTriggerKey = -1;
