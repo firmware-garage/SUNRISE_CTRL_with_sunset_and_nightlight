@@ -678,12 +678,12 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 </fieldset>
 <fieldset><legend>UI settings</legend>
 <div class="row"><label for="mdnsHostname">MDNS Hostname</label>
+<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark">
 <select id="textColor" name="textColor" style="width:auto;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;">
 <option value="0" ' + (cfg.textColor == 0 ? 'selected' : '') + '>Green</option>
 <option value="1" ' + (cfg.textColor == 1 ? 'selected' : '') + '>Amber</option>
 <option value="2" ' + (cfg.textColor == 2 ? 'selected' : '') + '>Red</option>
-</select>
-<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
+</select></div>
 </fieldset>
 <div class="btns prim">
 <button type="submit" class="save">SAVE SETTINGS</button>
