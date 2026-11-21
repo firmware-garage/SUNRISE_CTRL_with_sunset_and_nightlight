@@ -678,12 +678,12 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 </fieldset>
 <fieldset><legend>UI settings</legend>
 <div class="row"><label for="mdnsHostname">MDNS Hostname</label>
-<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark">
-<select id="textColor" name="textColor" style="margin-left:auto;width:auto;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;">
+<select id="textColor" name="textColor" style="width:auto;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;">
 <option value="0" ' + (cfg.textColor == 0 ? 'selected' : '') + '>Green</option>
 <option value="1" ' + (cfg.textColor == 1 ? 'selected' : '') + '>Amber</option>
 <option value="2" ' + (cfg.textColor == 2 ? 'selected' : '') + '>Red</option>
-</select></div>
+</select>
+<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
 </fieldset>
 <div class="btns prim">
 <button type="submit" class="save">SAVE SETTINGS</button>
@@ -737,87 +737,36 @@ function wifiReset(){const p=prompt('Forget WiFi and reboot into setup mode?\nOT
 poll();setInterval(poll,2000);
 // Text color selector
 document.getElementById("textColor").addEventListener("change",function(){
+  var input=document.getElementById("mdnsHostname");
   var color;
-  if(this.value=="0"){ color="#33ff66"; /* --g: bright green */ }
-  else if(this.value=="1"){ color="#ffd700"; /* --lab: amber/yellow */ }
-  else{ color="red"; }
-  
-  document.documentElement.style.setProperty('--g', color);
-  
-  /* Set --lab based on selection: amber keeps yellow, others use red or green */
-  var labColor;
-  if(this.value=="1"){ labColor = color; } /* amber: yellow same as text */
-  else if(this.value=="2"){ labColor = "red"; } /* red: red same as text */
-  else{ labColor = "#2fd65e"; } /* green: keep original dim green */
-  document.documentElement.style.setProperty('--lab', labColor);
-  
-  /* Update panel/background colors based on selection */
-  var dimColor, panelColor;
-  if(this.value=="0"){ dimColor = "#1c8a3a"; panelColor = "#020d04"; }
-  else if(this.value=="1"){ dimColor = "#4a3b00"; panelColor = "#2a1500"; }
-  else{ dimColor = "#8b0000"; panelColor = "#3d0c0c"; }
-  document.documentElement.style.setProperty('--dim', dimColor);
-  document.documentElement.style.setProperty('--panel', panelColor);
+  if(this.value=="0")color="var(--g)";
+  else if(this.value=="1")color="var(--lab)";
+  else color="red";
+  input.style.color=color;
 });
 
-// Apply text color from saved dropdown state on page load
-// The dropdown initial value is set by the server from EEPROM cfg.textColor
+// Apply saved text color on page load (dropdown value set from EEPROM cfg.textColor)
 (function() {
   var select = document.getElementById("textColor");
   if (!select) return;
-  var colorIndex = select.value;
-  var color;
-  if(colorIndex=="0"){ color="#33ff66"; }
-  else if(colorIndex=="1"){ color="#ffd700"; }
-  else{ color="red"; }
-  
-  document.documentElement.style.setProperty('--g', color);
-  
-  var labColor;
-  if(colorIndex=="1"){ labColor = color; }
-  else if(colorIndex=="2"){ labColor = "red"; }
-  else{ labColor = "#2fd65e"; }
-  document.documentElement.style.setProperty('--lab', labColor);
-  
-  var dimColor, panelColor;
-  if(colorIndex=="0"){ dimColor = "#1c8a3a"; panelColor = "#020d04"; }
-  else if(colorIndex=="1"){ dimColor = "#4a3b00"; panelColor = "#2a1500"; }
-  else{ dimColor = "#8b0000"; panelColor = "#3d0c0c"; }
-  document.documentElement.style.setProperty('--dim', dimColor);
-  document.documentElement.style.setProperty('--panel', panelColor);
+  var ci = select.value;
+  var c;
+  if(ci=="0")c="#33ff66";
+  else if(ci=="1")c="#ffd700";
+  else c="red";
+  document.documentElement.style.setProperty("--g",c);
+  var lc;
+  if(ci=="1")lc=c;
+  else if(ci=="2")lc="red";
+  else lc="#2fd655";
+  document.documentElement.style.setProperty("--lab",lc);
+  var dc,pc;
+  if(ci=="0"){dc="#1c8a3a";pc="#020d04";}
+  else if(ci=="1"){dc="#4a3b00";pc="#2a1500";}
+  else{dc="#8b0000";pc="#3d0c0c";}
+  document.documentElement.style.setProperty("--dim",dc);
+  document.documentElement.style.setProperty("--panel",pc);
 })();
-
-// Apply text color on page load based on dropdown state
-function applyLoadedTextColor() {
-  var select = document.getElementById("textColor");
-  var colorIndex = select ? select.value : "0";
-  var color;
-  if(colorIndex=="0"){ color="#33ff66"; }
-  else if(colorIndex=="1"){ color="#ffd700"; }
-  else{ color="red"; }
-  
-  document.documentElement.style.setProperty('--g', color);
-  
-  var labColor;
-  if(colorIndex=="1"){ labColor = color; }
-  else if(colorIndex=="2"){ labColor = "red"; }
-  else{ labColor = "#2fd65e"; }
-  document.documentElement.style.setProperty('--lab', labColor);
-  
-  var dimColor, panelColor;
-  if(colorIndex=="0"){ dimColor = "#1c8a3a"; panelColor = "#020d04"; }
-  else if(colorIndex=="1"){ dimColor = "#4a3b00"; panelColor = "#2a1500"; }
-  else{ dimColor = "#8b0000"; panelColor = "#3d0c0c"; }
-  document.documentElement.style.setProperty('--dim', dimColor);
-  document.documentElement.style.setProperty('--panel', panelColor);
-}
-
-// Run on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', applyLoadedTextColor);
-} else {
-  applyLoadedTextColor();
-});
 </script></body></html>)HTML";
 
 void handleState() {
