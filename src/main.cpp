@@ -87,6 +87,7 @@ struct Settings {
   uint8_t  nlBright;                              // 1..100
   uint8_t  pad2;
   char     mdnsHostname[32];                      // mDNS hostname (e.g. "sunrise")
+  uint8_t  textColor;                             // text color index (0=green, 1=amber, 2=red)
 };
 static_assert(offsetof(Settings, sunsetMin) == 16, "v2 fields must keep their offsets");
 static_assert(offsetof(Settings, nlEnabled) == 18, "v3 fields start right after v2");
@@ -101,11 +102,11 @@ const int      NIGHT_REC_ADDR  = 64;
 const uint32_t NIGHT_REC_MAGIC = 0x4E495445;      // "NITE"
 const size_t   EEPROM_BYTES    = 128;
 
-void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; strcpy(cfg.mdnsHostname, "sunrise"); }
+void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; cfg.textColor = 0; strcpy(cfg.mdnsHostname, "sunrise"); }
 
 void loadDefaults() {
   //      magic           en  hh mm  srMax ssMax pad  srMin hold ramp ssMin
-  cfg = { SETTINGS_MAGIC, 1,  6, 0,  100,  40,   0,   30,   30,  10,  20, 1, 40, 10, 0 };
+  cfg = { SETTINGS_MAGIC, 1,  6, 0,  100,  40,   0,   30,   30,  10,  20, 1, 40, 10, 0, 0 };
 }
 
 void clampSettings() {
@@ -675,8 +676,14 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 <label><span class="k">BRIGHT<b id="nlBrightV"></b></span><input type="range" id="nlBright" name="nlBright" min="1" max="100"></label>
 </div>
 </fieldset>
-<fieldset><legend>MDNS Hostname</legend>
-<div class="row"><label for="mdnsHostname">MDNS Hostname</label><input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
+<fieldset><legend>UI settings</legend>
+<div class="row"><label for="mdnsHostname">MDNS Hostname</label>
+<select id="textColor" name="textColor" style="width:auto;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;">
+<option value="0" ' + (cfg.textColor == 0 ? 'selected' : '') + '>Green</option>
+<option value="1" ' + (cfg.textColor == 1 ? 'selected' : '') + '>Amber</option>
+<option value="2" ' + (cfg.textColor == 2 ? 'selected' : '') + '>Red</option>
+</select>
+<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
 </fieldset>
 <div class="btns prim">
 <button type="submit" class="save">SAVE SETTINGS</button>
@@ -728,6 +735,15 @@ async function act(a,pw,extra){
 function nightTest(){act('nighttest',undefined,nlVals());}
 function wifiReset(){const p=prompt('Forget WiFi and reboot into setup mode?\nOTA password:');if(p)act('wifireset',p);}
 poll();setInterval(poll,2000);
+// Text color selector
+document.getElementById("textColor").addEventListener("change",function(){
+  var input=document.getElementById("mdnsHostname");
+  var color;
+  if(this.value=="0")color="var(--g)";
+  else if(this.value=="1")color="var(--lab)";
+  else color="red";
+  input.style.color=color;
+});
 </script></body></html>)HTML";
 
 void handleState() {
