@@ -164,7 +164,7 @@ uint32_t frameUsPeak = 0, frameUsMax = 0;        // render timing, for /api/stat
 // Night light timing
 const uint32_t NL_TEST_MS      = 10UL * 60000UL;  // TEST NIGHT turns itself off after 10 min
 const uint32_t NL_NOCLOCK_MS   = 12UL * 3600000UL;// no NTP time: run at most 12 h
-const float    NL_FADE_IN_S    = 20.0f;           // after a sunset: glints appear one by one
+const float    NL_FADE_IN_S    = 2.0f;            // after a sunset: glints appear within a couple of seconds
 const float    NL_TEST_IN_S    = 2.0f;
 const float    NL_TO_SUNRISE_S = 30.0f;           // overlaps the first 30 s of the sunrise
 const float    NL_END_S        = 60.0f;           // START time with the alarm off
@@ -328,7 +328,7 @@ void renderSunset(float q, float maxBright) {
 const float   NL_RED_PER_BLUE = 0.99f;   // purple mix, in counts. Too blue: raise it. Too pink: lower it
 const uint8_t NL_FLOOR_R      = 1;
 const uint8_t NL_FLOOR_B      = 2;       // (1,0,2): dimmest step that still reads purple
-const float   NL_MIN_B        = 1.5f;    // blue counts per glint at BRIGHT 1% (below the floor: ~3/4 of glints show)
+const float   NL_MIN_B        = 0.5f;    // blue counts per glint at BRIGHT 1% (below the floor: only ~1/4 of glints show)
 const float   NL_MAX_B        = 96.0f;   // blue counts per glint at BRIGHT 100%
 const float   NL_JITTER       = 0.30f;   // each glint wanders +/-30% of the spacing
 const uint8_t NL_MAX_SPARKS   = 4;
@@ -372,7 +372,7 @@ static void advanceLattice(uint32_t& n, float& f, float d) {
 }
 
 // Blue counts per glint for a BRIGHT setting, on a 2.2 curve so the slider
-// feels even: 1% -> 1.5 (below the floor), 10% -> 2.0, 25% -> 6.2, 50% -> 22, 100% -> 96.
+// feels even: 1% -> 0.5 (below the floor), 10% -> 1.0, 25% -> 4.7, 50% -> 21, 100% -> 96.
 float nlBaseBlue(uint8_t bright) {
   float x = (bright - 1) / 99.0f;
   return NL_MIN_B + (NL_MAX_B - NL_MIN_B) * powf(x, 2.2f);
@@ -794,6 +794,12 @@ void handleSettings() {
     endNight(2.0f);
     forgetNight();
   }
+
+  // NIGHT LIGHT ticked and saved while the strip is idle (for example after
+  // the sunset has already finished): start it now, running until the next
+  // START time, instead of waiting for the next sunset.
+  if (cfg.nlEnabled && mode == Mode::Idle && !nightTest && timeValid())
+    startNight(false);
 
   saveSettings();
   server.send(200, "application/json", "{\"ok\":true}");

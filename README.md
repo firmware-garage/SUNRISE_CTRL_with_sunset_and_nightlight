@@ -107,16 +107,16 @@ The first few pixels lit in random colours after power-on mean `setup()` never r
 About every 2nd to 3rd pixel is lit (every 3rd at BRIGHT 1%, every 2nd at 100%). Each lit spot, a "glint", wanders around its slot and dims and brightens, and the whole pattern creeps slowly along the strip, so the spacing is never a fixed pattern.
 
 - **SHIMMER (0-100%)** sets how fast the glints wander, how deep they dim and how often a sparkle appears: none at 0%, about one every 7 s at 40%, about one every 3 s at 100%. At 0% the pattern stands still.
-- **BRIGHT (1-100%)** sets the counts per glint on a 2.2 curve. A lit pixel is never dimmer than (1,0,2) in R,G,B, because at one or two counts a scaled purple loses its red and turns pure blue. Below that floor, the light gets dimmer by lighting fewer pixels. At 1%, about three quarters of the glints show at (1,0,2).
+- **BRIGHT (1-100%)** sets the counts per glint on a 2.2 curve. A lit pixel is never dimmer than (1,0,2) in R,G,B, because at one or two counts a scaled purple loses its red and turns pure blue. Below that floor, the light gets dimmer by lighting fewer pixels. At 1%, only about a quarter of the glints show at (1,0,2).
 - **Purple mix:** `NL_RED_PER_BLUE` (0.33) in `src/main.cpp`. Raise it if it looks too blue, lower it if it looks too pink. The floor is `NL_FLOOR_R` and `NL_FLOOR_B`.
 - The sliders act on the strip right away while the night light or its test is showing. Press **SAVE SETTINGS** to keep them.
 
 **When it runs**
 
-- It starts when a sunset finishes and the NIGHT LIGHT box is ticked. It fades in over 20 s from black.
+- It starts when a sunset finishes and the NIGHT LIGHT box is ticked. It fades in over a couple of seconds from black. Ticking NIGHT LIGHT and saving while the strip is idle (sunset already done) starts it right away, running until the next START time.
 - **Alarm on:** the sunrise starts at START, and the night light fades out over the first 30 s of the sunrise.
 - **Alarm off:** it fades out over 60 s at the START time anyway.
-- **No sunset, no night light.** It doesn't start on its own. Use TEST NIGHT to see it.
+- **No sunset, no night light (unless enabled).** If NIGHT LIGHT is ticked and saved while the strip is idle after sunset, it starts at once and runs until the next START time. Otherwise use TEST NIGHT or START SUNSET to see it.
 - **LIGHTS OFF:** off at once, and it stays off until the next sunset. The alarm still runs.
 - **Untick NIGHT LIGHT and SAVE** while it's on: it fades out in 2 s.
 - **START SUNSET or TEST SUNRISE** while it's on: it cuts out at once. A new night light starts after the new sunset.
