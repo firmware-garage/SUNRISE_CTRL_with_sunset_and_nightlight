@@ -738,15 +738,26 @@ poll();setInterval(poll,2000);
 // Text color selector
 document.getElementById("textColor").addEventListener("change",function(){
   var color;
-  if(this.value=="0")color="#33ff66";       /* --g: bright green */
-  else if(this.value=="1")color="#ffd700";   /* --lab: amber/yellow */
-  else color="red";
-  document.documentElement.style.setProperty('--g', color);
-  document.documentElement.style.setProperty('--lab', this.value=="1" ? color : "#2fd65e");
+  if(this.value=="0"){ color="#33ff66"; /* --g: bright green */ }
+  else if(this.value=="1"){ color="#ffd700"; /* --lab: amber/yellow */ }
+  else{ color="red"; }
   
-  /* Also update other commonly used variables for consistency */
-  document.documentElement.style.setProperty('--dim', this.value=="1" ? "#4a3b00" : "#1c8a3a");
-  document.documentElement.style.setProperty('--panel', this.value=="1" ? "#2a1500" : "#020d04");
+  document.documentElement.style.setProperty('--g', color);
+  
+  /* Set --lab based on selection: amber keeps yellow, others use red or green */
+  var labColor;
+  if(this.value=="1"){ labColor = color; } /* amber: yellow same as text */
+  else if(this.value=="2"){ labColor = "red"; } /* red: red same as text */
+  else{ labColor = "#2fd65e"; } /* green: keep original dim green */
+  document.documentElement.style.setProperty('--lab', labColor);
+  
+  /* Update panel/background colors based on selection */
+  var dimColor, panelColor;
+  if(this.value=="0"){ dimColor = "#1c8a3a"; panelColor = "#020d04"; }
+  else if(this.value=="1"){ dimColor = "#4a3b00"; panelColor = "#2a1500"; }
+  else{ dimColor = "#8b0000"; panelColor = "#3d0c0c"; }
+  document.documentElement.style.setProperty('--dim', dimColor);
+  document.documentElement.style.setProperty('--panel', panelColor);
 });
 </script></body></html>)HTML";
 
