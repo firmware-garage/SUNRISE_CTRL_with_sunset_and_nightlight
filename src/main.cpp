@@ -656,9 +656,8 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 </fieldset>
 <form id="f">
 <fieldset><legend>SUNRISE</legend>
-<div class="row"><label for="enabled"><input type="checkbox" id="enabled" name="enabled">ALARM</label>
-<label><span class="k">RISE MIN</span><input type="number" id="sunriseMin" name="sunriseMin" min="1" max="180"></label>
-<label for="start">START<input type="time" id="start" name="start" required></label>
+<div class="row"><label for="enabled"><input type="checkbox" id="enabled" name="enabled">ALARM</label><label for="start">START<input type="time" id="start" name="start" required></label></div>
+<div class="g3"><label><span class="k">RISE MIN</span><input type="number" id="sunriseMin" name="sunriseMin" min="1" max="180"></label>
 <label><span class="k">HOLD MIN</span><input type="number" id="holdMin" name="holdMin" min="0" max="240"></label>
 <label><span class="k">RAMP MIN</span><input type="number" id="rampDownMin" name="rampDownMin" min="0" max="120"></label>
 </div>
