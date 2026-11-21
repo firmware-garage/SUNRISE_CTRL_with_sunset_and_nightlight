@@ -787,7 +787,6 @@ void handleSettings() {
   cfg.nlEnabled     = server.hasArg("nlEnabled") ? 1 : 0;
   cfg.nlIntensity   = argU("nlIntensity", 0, 100, cfg.nlIntensity);
   cfg.nlBright      = argU("nlBright", 1, 100, cfg.nlBright);
-  cfg.mdnsHostname[0] = '\0';
   if (server.hasArg("mdnsHostname")) {
     String h = server.arg("mdnsHostname");
     if (h.length() > 0) {
