@@ -102,7 +102,7 @@ const int      NIGHT_REC_ADDR  = 64;
 const uint32_t NIGHT_REC_MAGIC = 0x4E495445;      // "NITE"
 const size_t   EEPROM_BYTES    = 128;
 
-void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; cfg.textColor = 0; strcpy(cfg.mdnsHostname, "sunrise"); }
+void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0;  strcpy(cfg.mdnsHostname, "sunrise"); }
 
 void loadDefaults() {
   //      magic           en  hh mm  srMax ssMax pad  srMin hold ramp ssMin
