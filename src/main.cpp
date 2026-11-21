@@ -744,29 +744,6 @@ document.getElementById("textColor").addEventListener("change",function(){
   else color="red";
   input.style.color=color;
 });
-
-// Apply saved text color on page load (dropdown value set from EEPROM cfg.textColor)
-(function() {
-  var select = document.getElementById("textColor");
-  if (!select) return;
-  var ci = select.value;
-  var c;
-  if(ci=="0")c="#33ff66";
-  else if(ci=="1")c="#ffd700";
-  else c="red";
-  document.documentElement.style.setProperty("--g",c);
-  var lc;
-  if(ci=="1")lc=c;
-  else if(ci=="2")lc="red";
-  else lc="#2fd655";
-  document.documentElement.style.setProperty("--lab",lc);
-  var dc,pc;
-  if(ci=="0"){dc="#1c8a3a";pc="#020d04";}
-  else if(ci=="1"){dc="#4a3b00";pc="#2a1500";}
-  else{dc="#8b0000";pc="#3d0c0c";}
-  document.documentElement.style.setProperty("--dim",dc);
-  document.documentElement.style.setProperty("--panel",pc);
-})();
 </script></body></html>)HTML";
 
 void handleState() {
