@@ -30,7 +30,7 @@
 #include <time.h>
 
 // ---------------- User config ----------------
-#define cfg.mdnsHostname       "sunrise"                 // http://sunrise.local
+#define HOSTNAME       "sunrise"                 // http://sunrise.local
 #define SETUP_AP_NAME  "Sunrise-Setup"
 // OTA_PASSWORD comes from secrets.ini through platformio.ini (build_flags and
 // upload_flags read the same value), so the password lives in one gitignored
