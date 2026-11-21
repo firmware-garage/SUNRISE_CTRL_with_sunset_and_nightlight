@@ -737,12 +737,12 @@ function wifiReset(){const p=prompt('Forget WiFi and reboot into setup mode?\nOT
 poll();setInterval(poll,2000);
 // Text color selector
 document.getElementById("textColor").addEventListener("change",function(){
-  var input=document.getElementById("mdnsHostname");
   var color;
   if(this.value=="0")color="#33ff66";       /* --g: bright green */
   else if(this.value=="1")color="#2fd65e";   /* --lab: dim green */
   else color="red";
-  input.style.color=color;
+  document.documentElement.style.setProperty('--g', color);
+  document.documentElement.style.setProperty('--lab', this.value=="1" ? color : "#2fd65e");
 });
 </script></body></html>)HTML";
 
