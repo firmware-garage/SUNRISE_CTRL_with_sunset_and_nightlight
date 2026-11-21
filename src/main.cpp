@@ -760,6 +760,33 @@ document.getElementById("textColor").addEventListener("change",function(){
   document.documentElement.style.setProperty('--panel', panelColor);
 });
 
+// Apply text color from saved dropdown state on page load
+// The dropdown initial value is set by the server from EEPROM cfg.textColor
+(function() {
+  var select = document.getElementById("textColor");
+  if (!select) return;
+  var colorIndex = select.value;
+  var color;
+  if(colorIndex=="0"){ color="#33ff66"; }
+  else if(colorIndex=="1"){ color="#ffd700"; }
+  else{ color="red"; }
+  
+  document.documentElement.style.setProperty('--g', color);
+  
+  var labColor;
+  if(colorIndex=="1"){ labColor = color; }
+  else if(colorIndex=="2"){ labColor = "red"; }
+  else{ labColor = "#2fd65e"; }
+  document.documentElement.style.setProperty('--lab', labColor);
+  
+  var dimColor, panelColor;
+  if(colorIndex=="0"){ dimColor = "#1c8a3a"; panelColor = "#020d04"; }
+  else if(colorIndex=="1"){ dimColor = "#4a3b00"; panelColor = "#2a1500"; }
+  else{ dimColor = "#8b0000"; panelColor = "#3d0c0c"; }
+  document.documentElement.style.setProperty('--dim', dimColor);
+  document.documentElement.style.setProperty('--panel', panelColor);
+})();
+
 // Apply text color on page load based on dropdown state
 function applyLoadedTextColor() {
   var select = document.getElementById("textColor");
