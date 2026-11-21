@@ -657,9 +657,6 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 <form id="f">
 <fieldset><legend>SUNRISE</legend>
 <div class="row"><label for="enabled"><input type="checkbox" id="enabled" name="enabled">ALARM</label>
-<label for="start">START<input type="time" id="start" name="start" required></label></div>
-<div class="row"><label for="mdnsHostname">MDNS Hostname</label><input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
-<div class="g3">
 <label><span class="k">RISE MIN</span><input type="number" id="sunriseMin" name="sunriseMin" min="1" max="180"></label>
 <label><span class="k">HOLD MIN</span><input type="number" id="holdMin" name="holdMin" min="0" max="240"></label>
 <label><span class="k">RAMP MIN</span><input type="number" id="rampDownMin" name="rampDownMin" min="0" max="120"></label>
@@ -677,6 +674,9 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 <label><span class="k">SHIMMER<b id="nlIntensityV"></b></span><input type="range" id="nlIntensity" name="nlIntensity" min="0" max="100"></label>
 <label><span class="k">BRIGHT<b id="nlBrightV"></b></span><input type="range" id="nlBright" name="nlBright" min="1" max="100"></label>
 </div>
+</fieldset>
+<fieldset><legend>MDNS Hostname</legend>
+<div class="row"><label for="mdnsHostname">MDNS Hostname</label><input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
 </fieldset>
 <div class="btns prim">
 <button type="submit" class="save">SAVE SETTINGS</button>
