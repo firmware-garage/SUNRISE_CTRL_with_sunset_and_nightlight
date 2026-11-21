@@ -739,10 +739,14 @@ poll();setInterval(poll,2000);
 document.getElementById("textColor").addEventListener("change",function(){
   var color;
   if(this.value=="0")color="#33ff66";       /* --g: bright green */
-  else if(this.value=="1")color="#2fd65e";   /* --lab: dim green */
+  else if(this.value=="1")color="#ffd700";   /* --lab: amber/yellow */
   else color="red";
   document.documentElement.style.setProperty('--g', color);
   document.documentElement.style.setProperty('--lab', this.value=="1" ? color : "#2fd65e");
+  
+  /* Also update other commonly used variables for consistency */
+  document.documentElement.style.setProperty('--dim', this.value=="1" ? "#4a3b00" : "#1c8a3a");
+  document.documentElement.style.setProperty('--panel', this.value=="1" ? "#2a1500" : "#020d04");
 });
 </script></body></html>)HTML";
 
