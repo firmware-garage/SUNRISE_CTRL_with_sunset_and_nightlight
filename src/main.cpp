@@ -30,7 +30,7 @@
 #include <time.h>
 
 // ---------------- User config ----------------
-#define HOSTNAME       "sunrise"                 // http://sunrise.local
+#define cfg.mdnsHostname       "sunrise"                 // http://sunrise.local
 #define SETUP_AP_NAME  "Sunrise-Setup"
 // OTA_PASSWORD comes from secrets.ini through platformio.ini (build_flags and
 // upload_flags read the same value), so the password lives in one gitignored
@@ -86,6 +86,7 @@ struct Settings {
   uint8_t  nlIntensity;                           // 0..100 shimmer + sparkle rate
   uint8_t  nlBright;                              // 1..100
   uint8_t  pad2;
+  char     mdnsHostname[32];                      // mDNS hostname (e.g. "sunrise")
 };
 static_assert(offsetof(Settings, sunsetMin) == 16, "v2 fields must keep their offsets");
 static_assert(offsetof(Settings, nlEnabled) == 18, "v3 fields start right after v2");
@@ -100,7 +101,7 @@ const int      NIGHT_REC_ADDR  = 64;
 const uint32_t NIGHT_REC_MAGIC = 0x4E495445;      // "NITE"
 const size_t   EEPROM_BYTES    = 128;
 
-void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; }
+void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; strcpy(cfg.mdnsHostname, "sunrise"); }
 
 void loadDefaults() {
   //      magic           en  hh mm  srMax ssMax pad  srMin hold ramp ssMin
@@ -657,6 +658,7 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 <fieldset><legend>SUNRISE</legend>
 <div class="row"><label for="enabled"><input type="checkbox" id="enabled" name="enabled">ALARM</label>
 <label for="start">START<input type="time" id="start" name="start" required></label></div>
+<div class="row"><label for="mdnsHostname">MDNS Hostname</label><input type="text" id="mdnsHostname" name="mdnsHostname" value="sunrise" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
 <div class="g3">
 <label><span class="k">RISE MIN</span><input type="number" id="sunriseMin" name="sunriseMin" min="1" max="180"></label>
 <label><span class="k">HOLD MIN</span><input type="number" id="holdMin" name="holdMin" min="0" max="240"></label>
@@ -755,7 +757,7 @@ void handleState() {
     cfg.enabled ? "true" : "false", cfg.startHour, cfg.startMin,
     cfg.sunriseMin, cfg.holdMin, cfg.rampDownMin, cfg.sunriseMaxPct, cfg.sunsetMaxPct, cfg.sunsetMin,
     cfg.nlEnabled ? "true" : "false", cfg.nlIntensity, cfg.nlBright, (unsigned long)frameUsMax,
-    ip.c_str(), HOSTNAME, (int)WiFi.RSSI());
+    ip.c_str(), cfg.mdnsHostname, (int)WiFi.RSSI());
   server.send(200, "application/json", buf);
 }
 
@@ -785,6 +787,11 @@ void handleSettings() {
   cfg.nlEnabled     = server.hasArg("nlEnabled") ? 1 : 0;
   cfg.nlIntensity   = argU("nlIntensity", 0, 100, cfg.nlIntensity);
   cfg.nlBright      = argU("nlBright", 1, 100, cfg.nlBright);
+  cfg.mdnsHostname[0] = '\0';
+  if (server.hasArg("mdnsHostname")) {
+    String h = server.arg("mdnsHostname");
+    h.toCharArray(cfg.mdnsHostname, sizeof(cfg.mdnsHostname));
+  }
 
   // New start time: allow it to fire today even if today's already ran (handy for testing).
   if (cfg.startHour != oldH || cfg.startMin != oldM) lastTriggerKey = -1;
@@ -914,9 +921,9 @@ void setup() {
   rngState = RANDOM_REG32 | 1;                 // hardware RNG seeds the sparkles
 
   WiFi.mode(WIFI_STA);
-  WiFi.hostname(HOSTNAME);
+  WiFi.hostname(cfg.mdnsHostname);
   WiFiManager wm;
-  wm.setHostname(HOSTNAME);
+  wm.setHostname(cfg.mdnsHostname);
   wm.setConfigPortalTimeout(300);              // 5 min, then reboot and retry
   wm.setAPCallback(portalIndicator);
   if (!wm.autoConnect(SETUP_AP_NAME)) {
@@ -928,14 +935,14 @@ void setup() {
 
   configTime(TZ_STRING, NTP_1, NTP_2);
 
-  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.setHostname(cfg.mdnsHostname);
   ArduinoOTA.setPassword(OTA_PASSWORD);
   ArduinoOTA.onStart([]() {
     otaActive = true;
     blankStrip();
   });
   ArduinoOTA.onError([](ota_error_t) { otaActive = false; });
-  ArduinoOTA.begin();                          // also starts mDNS as HOSTNAME.local
+  ArduinoOTA.begin();                          // also starts mDNS as cfg.mdnsHostname.local
   MDNS.addService("http", "tcp", 80);
 
   server.on("/", HTTP_GET, []() { server.send_P(200, "text/html", PAGE); });
