@@ -30,7 +30,7 @@
 #include <time.h>
 
 // ---------------- User config ----------------
-#define HOSTNAME       "sunrise"                 // http://sunrise.local
+
 #define SETUP_AP_NAME  "Sunrise-Setup"
 // OTA_PASSWORD comes from secrets.ini through platformio.ini (build_flags and
 // upload_flags read the same value), so the password lives in one gitignored
@@ -792,6 +792,17 @@ void handleSettings() {
     String h = server.arg("mdnsHostname");
     h.toCharArray(cfg.mdnsHostname, sizeof(cfg.mdnsHostname));
   }
+
+  // Save settings to EEPROM
+  saveSettings();
+
+  // Re-apply hostname and restart mDNS dynamically (without reboot)
+  WiFi.hostname(cfg.mdnsHostname);
+  ArduinoOTA.setHostname(cfg.mdnsHostname);
+
+  // Force mDNS to re-register with the new hostname
+  MDNS.removeService("http", "tcp", 80);
+  MDNS.addService("http", "tcp", 80);
 
   // New start time: allow it to fire today even if today's already ran (handy for testing).
   if (cfg.startHour != oldH || cfg.startMin != oldM) lastTriggerKey = -1;
