@@ -935,11 +935,17 @@ void setup() {
   WiFi.hostname(cfg.mdnsHostname);
   WiFiManager wm;
   wm.setHostname(cfg.mdnsHostname);
+  // Add custom parameter for mDNS hostname to set it during WiFi setup portal
+  WiFiManagerParameter mdnsHostnameInput("mdnsHostname", "MDNS Hostname", cfg.mdnsHostname, 32);
+  wm.addParameter(&mdnsHostnameInput);
   wm.setConfigPortalTimeout(300);              // 5 min, then reboot and retry
   wm.setAPCallback(portalIndicator);
   if (!wm.autoConnect(SETUP_AP_NAME)) {
     ESP.restart();
   }
+  // Save the mDNS hostname from the WiFiManager parameter to EEPROM
+  strncpy(cfg.mdnsHostname, mdnsHostnameInput.getValue(), sizeof(cfg.mdnsHostname) - 1);
+  cfg.mdnsHostname[sizeof(cfg.mdnsHostname) - 1] = '\0';
   blankStrip();
   Serial.print(F("IP: "));
   Serial.println(WiFi.localIP());
