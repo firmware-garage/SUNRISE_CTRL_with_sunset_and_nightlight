@@ -790,7 +790,9 @@ void handleSettings() {
   cfg.mdnsHostname[0] = '\0';
   if (server.hasArg("mdnsHostname")) {
     String h = server.arg("mdnsHostname");
-    h.toCharArray(cfg.mdnsHostname, sizeof(cfg.mdnsHostname));
+    if (h.length() > 0) {
+      h.toCharArray(cfg.mdnsHostname, sizeof(cfg.mdnsHostname));
+    }
   }
 
   // Save settings to EEPROM
