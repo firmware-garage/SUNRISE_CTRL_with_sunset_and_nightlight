@@ -1,5 +1,5 @@
 /*
-  Sunrise Light v2
+  Sunrise Light v3 - Now with Sunset and Night Light
   ESP8266 + WS2815 strip (144 px), green-on-black CRT control page.
 
   - First boot: no credentials -> opens AP "Sunrise-Setup" with a captive
@@ -9,6 +9,8 @@
   - OTA updates via PlatformIO env nodemcuv2_ota, or in a browser at
     http://sunrise.local/update (user "admin", password OTA_PASSWORD).
     Upload .pio/build/nodemcuv2/firmware.bin there.
+  - UI controls: start time, sunrise duration, max brightness, sunset duration,
+    night light on/off, night light brightness and shimmer rate, text color.
 
   LED data: GPIO3 (the RX pin) by default, sent by the I2S DMA engine, so
   WiFi interrupts can't corrupt the timing and the CPU isn't blocked.
@@ -87,6 +89,7 @@ struct Settings {
   uint8_t  nlBright;                              // 1..100
   uint8_t  pad2;
   char     mdnsHostname[32];                      // mDNS hostname (e.g. "sunrise")
+  uint8_t  textColor;                             // text color index (0=green, 1=amber, 2=red)
 };
 static_assert(offsetof(Settings, sunsetMin) == 16, "v2 fields must keep their offsets");
 static_assert(offsetof(Settings, nlEnabled) == 18, "v3 fields start right after v2");
@@ -101,11 +104,11 @@ const int      NIGHT_REC_ADDR  = 64;
 const uint32_t NIGHT_REC_MAGIC = 0x4E495445;      // "NITE"
 const size_t   EEPROM_BYTES    = 128;
 
-void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0; strcpy(cfg.mdnsHostname, "sunrise"); }
+void nlDefaults() { cfg.nlEnabled = 1; cfg.nlIntensity = 40; cfg.nlBright = 10; cfg.pad2 = 0;  strcpy(cfg.mdnsHostname, "sunrise"); }
 
 void loadDefaults() {
   //      magic           en  hh mm  srMax ssMax pad  srMin hold ramp ssMin
-  cfg = { SETTINGS_MAGIC, 1,  6, 0,  100,  40,   0,   30,   30,  10,  20, 1, 40, 10, 0 };
+  cfg = { SETTINGS_MAGIC, 1,  6, 0,  100,  40,   0,   30,   30,  10,  20, 1, 40, 10, 0, 0 };
 }
 
 void clampSettings() {
@@ -127,6 +130,26 @@ void saveSettings() {
   EEPROM.put(0, cfg);
   EEPROM.commit();
 }
+
+void setHostnameClean(const char* raw) {
+  char clean[sizeof(cfg.mdnsHostname)];
+  size_t j = 0;
+  if (raw) {
+    for (size_t i = 0; raw[i] != '\0' && j < sizeof(clean) - 1; i++) {
+      char c = tolower((unsigned char)raw[i]);
+      if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '-' && j > 0)) {
+        clean[j++] = c;
+      } else if (c == ' ' || c == '_') {
+        if (j > 0 && clean[j - 1] != '-') clean[j++] = '-';
+      }
+    }
+  }
+  while (j > 0 && clean[j - 1] == '-') j--;   // strip trailing hyphens
+  clean[j] = '\0';
+  if (j == 0) strcpy(clean, "sunrise");       // fallback if nothing valid remained
+  strcpy(cfg.mdnsHostname, clean);
+}
+
 
 void loadSettings() {
   EEPROM.get(0, cfg);
@@ -644,7 +667,11 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 #msg.show{display:block}
 .foot{color:var(--lab);font-size:13px;font-weight:normal}.foot a{color:var(--lab)}
 @media(max-width:350px){body{padding:8px 6px;font-size:16px}.k{font-size:12px}button{font-size:12px;letter-spacing:0}fieldset{padding:3px 6px 8px}}
-</style></head><body><div class="wrap">
+</style><script>
+(function(){var ci=localStorage.getItem('tc');if(ci==='1'||ci==='2'){var r=document.documentElement.style;
+r.setProperty('--g',ci==='1'?'#ffd700':'red');r.setProperty('--lab',ci==='1'?'#ffd700':'red');
+r.setProperty('--dim',ci==='1'?'#4a3b00':'#8b0000');r.setProperty('--panel',ci==='1'?'#2a1500':'#3d0c0c');}})();
+</script></head><body><div class="wrap">
 <header><h1>&gt; SUNRISE_CTRL<span class="cur"></span></h1><div class="sub" id="host">sunrise.local</div></header>
 <fieldset><legend>STATUS</legend>
 <div class="g3">
@@ -675,8 +702,14 @@ padding:8px 14px;font-size:16px;white-space:nowrap;box-shadow:0 0 10px rgba(51,2
 <label><span class="k">BRIGHT<b id="nlBrightV"></b></span><input type="range" id="nlBright" name="nlBright" min="1" max="100"></label>
 </div>
 </fieldset>
-<fieldset><legend>MDNS Hostname</legend>
-<div class="row"><label for="mdnsHostname">MDNS Hostname</label><input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark"></div>
+<fieldset><legend>UI settings</legend>
+<div class="row"><label for="mdnsHostname">MDNS Hostname</label>
+<input type="text" id="mdnsHostname" name="mdnsHostname" minlength="1" maxlength="32" style="width:100%;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;text-shadow:inherit;color-scheme:dark">
+<select id="textColor" name="textColor" style="width:auto;background:#000;color:var(--g);border:1px solid var(--dim);font:inherit;padding:6px 6px;">
+<option value="0">Green</option>
+<option value="1">Amber</option>
+<option value="2">Red</option>
+</select></div>
 </fieldset>
 <div class="btns prim">
 <button type="submit" class="save">SAVE SETTINGS</button>
@@ -706,15 +739,39 @@ function preview(){if(!nlOn())return;if(pvT){pvQ=true;return;}
 function fillR(k){const e=$(k);e.style.setProperty('--f',(e.value-e.min)/(e.max-e.min));}
 SL.forEach(k=>{fillR(k);$(k).addEventListener('input',()=>{$(k+'V').textContent=$(k).value+'%';fillR(k);if(k.startsWith('nl'))preview();});});
 function showNt(){const b=$('nt'),t=curMode==='NITE TEST';b.classList.toggle('on',t);b.textContent=t?'STOP TEST':'TEST NIGHT';}
+
+function applyTheme(ci) {
+  ci = String(ci);
+  localStorage.setItem('tc', ci);
+  var c   = ci === "1" ? "#ffd700" : (ci === "2" ? "red" : "#33ff66");
+  var lc  = ci === "1" ? "#ffd700" : (ci === "2" ? "red" : "#2fd65e");
+  var dc  = ci === "1" ? "#4a3b00" : (ci === "2" ? "#8b0000" : "#1c8a3a");
+  var pc  = ci === "1" ? "#2a1500" : (ci === "2" ? "#3d0c0c" : "#020d04");
+  document.documentElement.style.setProperty('--g', c);
+  document.documentElement.style.setProperty('--lab', lc);
+  document.documentElement.style.setProperty('--dim', dc);
+  document.documentElement.style.setProperty('--panel', pc);
+}
+
+$('textColor').addEventListener('change', function() { applyTheme(this.value); });
+
 async function poll(){
  try{const s=await (await fetch('/api/state')).json();
   $('clock').textContent=s.timeValid?s.clock:'NTP WAIT';
   $('mode').textContent=s.mode;curMode=s.mode;showNt();$('remain').textContent=fmt(s.remainSec);
   $('fill').style.width=s.progress+'%';
   $('host').textContent=s.host;$('net').textContent=s.ip+' // RSSI '+s.rssi+' dBm';
-  if(!loaded){loaded=true;$('enabled').checked=s.enabled;$('nlEnabled').checked=s.nlEnabled;$('start').value=s.start;
+  if(!loaded){
+   loaded=true;
+   $('enabled').checked=s.enabled;
+   $('nlEnabled').checked=s.nlEnabled;
+   $('start').value=s.start;
+   $('mdnsHostname').value=s.mdnsHostname;
+   $('textColor').value=s.textColor;
+   applyTheme(s.textColor);
    ['sunriseMin','holdMin','rampDownMin','sunsetMin'].concat(SL).forEach(k=>$(k).value=s[k]);
-   SL.forEach(k=>{$(k+'V').textContent=s[k]+'%';fillR(k);});}
+   SL.forEach(k=>{$(k+'V').textContent=s[k]+'%';fillR(k);});
+  }
  }catch(e){$('mode').textContent='LINK LOST';}
 }
 $('f').addEventListener('submit',async e=>{e.preventDefault();
@@ -728,7 +785,8 @@ async function act(a,pw,extra){
 function nightTest(){act('nighttest',undefined,nlVals());}
 function wifiReset(){const p=prompt('Forget WiFi and reboot into setup mode?\nOTA password:');if(p)act('wifireset',p);}
 poll();setInterval(poll,2000);
-</script></body></html>)HTML";
+</script>
+</body></html>)HTML";
 
 void handleState() {
   time_t now = time(nullptr);
@@ -752,12 +810,12 @@ void handleState() {
     "\"enabled\":%s,\"start\":\"%02u:%02u\",\"sunriseMin\":%u,\"holdMin\":%u,"
     "\"rampDownMin\":%u,\"sunriseMax\":%u,\"sunsetMax\":%u,\"sunsetMin\":%u,"
     "\"nlEnabled\":%s,\"nlIntensity\":%u,\"nlBright\":%u,\"frameUs\":%lu,"
-    "\"ip\":\"%s\",\"host\":\"%s.local\",\"rssi\":%d}",
+    "\"ip\":\"%s\",\"host\":\"%s.local\",\"mdnsHostname\":\"%s\",\"textColor\":%u,\"rssi\":%d}",
     clock, timeValid() ? "true" : "false", modeName(mode), progress, (unsigned long)remain,
     cfg.enabled ? "true" : "false", cfg.startHour, cfg.startMin,
     cfg.sunriseMin, cfg.holdMin, cfg.rampDownMin, cfg.sunriseMaxPct, cfg.sunsetMaxPct, cfg.sunsetMin,
     cfg.nlEnabled ? "true" : "false", cfg.nlIntensity, cfg.nlBright, (unsigned long)frameUsMax,
-    ip.c_str(), cfg.mdnsHostname, (int)WiFi.RSSI());
+    ip.c_str(), cfg.mdnsHostname, cfg.mdnsHostname, cfg.textColor, (int)WiFi.RSSI());
   server.send(200, "application/json", buf);
 }
 
@@ -787,15 +845,11 @@ void handleSettings() {
   cfg.nlEnabled     = server.hasArg("nlEnabled") ? 1 : 0;
   cfg.nlIntensity   = argU("nlIntensity", 0, 100, cfg.nlIntensity);
   cfg.nlBright      = argU("nlBright", 1, 100, cfg.nlBright);
+  cfg.textColor     = server.hasArg("textColor") ? server.arg("textColor").toInt() : 0;
   if (server.hasArg("mdnsHostname")) {
-    String h = server.arg("mdnsHostname");
-    if (h.length() > 0) {
-      h.toCharArray(cfg.mdnsHostname, sizeof(cfg.mdnsHostname));
-    }
+    setHostnameClean(server.arg("mdnsHostname").c_str());
   }
 
-  // Save settings to EEPROM
-  saveSettings();
 
   // Re-apply hostname and restart mDNS dynamically (without reboot)
   WiFi.hostname(cfg.mdnsHostname);
@@ -819,7 +873,9 @@ void handleSettings() {
   if (cfg.nlEnabled && mode == Mode::Idle && !nightTest && timeValid())
     startNight(false);
 
+  // Save settings to EEPROM
   saveSettings();
+
   server.send(200, "application/json", "{\"ok\":true}");
 }
 
@@ -829,6 +885,8 @@ void applyNlArgs() {
   cfg.nlIntensity = argU("nlIntensity", 0, 100, cfg.nlIntensity);
   cfg.nlBright    = argU("nlBright", 1, 100, cfg.nlBright);
 }
+
+
 
 void handlePreview() {
   applyNlArgs();
@@ -943,9 +1001,21 @@ void setup() {
   if (!wm.autoConnect(SETUP_AP_NAME)) {
     ESP.restart();
   }
-  // Save the mDNS hostname from the WiFiManager parameter to EEPROM
-  strncpy(cfg.mdnsHostname, mdnsHostnameInput.getValue(), sizeof(cfg.mdnsHostname) - 1);
-  cfg.mdnsHostname[sizeof(cfg.mdnsHostname) - 1] = '\0';
+
+  // Save the mDNS hostname from the WiFiManager parameter only if it changed
+  const char* newHost = mdnsHostnameInput.getValue();
+  if (newHost && newHost[0] != '\0') {
+    char prevHost[sizeof(cfg.mdnsHostname)];
+    strcpy(prevHost, cfg.mdnsHostname);
+    setHostnameClean(newHost);
+    if (strcmp(prevHost, cfg.mdnsHostname) != 0) {
+      WiFi.hostname(cfg.mdnsHostname);
+      saveSettings();
+    }
+  }
+
+  
+
   blankStrip();
   Serial.print(F("IP: "));
   Serial.println(WiFi.localIP());
