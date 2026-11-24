@@ -1,6 +1,6 @@
 # SUNRISE_CTRL
 
-A customizable sunrise, sunset and night light using an addressable LED light strip, with a retro green-screen web GUI for setting them.
+A customizable sunrise, sunset and night light using an addressable LED light strip, with a retro green-screen (plus two other colors) web GUI for setting them.  mDNS hostname can be edited from UI for using more than one on the same WiFi.
 
 ESP8266 (NodeMCU v2) driving a 144 px WS2815 or WS2812 strip.
 
@@ -15,7 +15,12 @@ ESP8266 (NodeMCU v2) driving a 144 px WS2815 or WS2812 strip.
 
 ## Control Page
 
-<img src="images/Screenshot_20261121-073045.Chrome.png" alt="App Screenshot" width="600">
+<p align="center">
+  <img src="images/Green UI.png" alt="First image" width="30%" />
+  <img src="images/Amber UI.png" alt="Second image" width="30%" />
+  <img src="images/Red UI.png" alt="Third image" width="30%" />
+</p>
+
 
 
 ## Power
